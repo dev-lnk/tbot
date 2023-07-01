@@ -15,8 +15,6 @@ abstract class TelegramBot
 {
     protected Telegram $telegram;
 
-    protected string $hookUrl = '';
-
     /**
      * @throws TelegramException
      */
@@ -137,19 +135,20 @@ abstract class TelegramBot
     }
 
     /**
+     * Webhook Processing
+     *
      * @throws TelegramException
      */
-    public function setWebHook()
+    public function handle(): bool
     {
-        if(empty($this->hookUrl)) {
-            return;
-        }
+        return $this->telegram->handle();
+    }
 
-        $result = $this->telegram->setWebhook($this->hookUrl);
-        if ($result->isOk()) {
-            dd($result->getRawData(), $result->getResult());
-        } else {
-            dump($result);
-        }
+    /**
+     * @throws TelegramException
+     */
+    public function setWebHook(string $webhookUrl): ServerResponse
+    {
+        return $this->telegram->setWebhook($webhookUrl);
     }
 }

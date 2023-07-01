@@ -8,8 +8,6 @@ use Longman\TelegramBot\Exception\TelegramException;
 
 class InfoBot extends TelegramBot
 {
-    protected string $hookUrl = '';
-
     /**
      * @throws TelegramException
      */

@@ -1,50 +1,51 @@
 FROM php:8.1-fpm
 
-RUN apt-get update
-RUN apt-get install -y wget
-RUN apt-get install -y curl
-RUN apt-get install -y git
-RUN apt-get install -y bash
-RUN apt-get install -y vim
-RUN apt-get install -y zip unzip
-RUN apt-get install -y libfreetype6-dev
-RUN apt-get install -y libjpeg62-turbo-dev
-RUN apt-get install -y libicu-dev
-RUN apt-get install -y libmcrypt4
-RUN apt-get install -y libmcrypt-dev
-RUN apt-get install -y libpng-dev
-RUN apt-get install -y zlib1g-dev
-RUN apt-get install -y libxml2-dev
-RUN apt-get install -y libzip-dev
-RUN apt-get install -y libonig-dev
-RUN apt-get install -y libcurl4-openssl-dev
-RUN apt-get install -y libldap2-dev
-RUN apt-get install -y libpq-dev
-RUN apt-get install -y htop
+RUN apt-get update \
+    && apt-get install -y \
+    libfreetype6-dev \
+    libjpeg62-turbo-dev \
+    libicu-dev \
+    libmcrypt4 \
+    libmcrypt-dev \
+    libpng-dev \
+    zlib1g-dev \
+    libxml2-dev \
+    libzip-dev \
+    libonig-dev \
+    libcurl4-openssl-dev \
+    libldap2-dev \
+    libpq-dev \
+    htop \
+    wget \
+    curl \
+    bash \
+    vim \
+    zip \
+    unzip
+    #supervisor \
 
-RUN docker-php-ext-configure intl --enable-intl
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg
-RUN docker-php-ext-install -j$(nproc) gd
-RUN docker-php-ext-install pdo
-RUN docker-php-ext-install mysqli pdo_mysql
-RUN docker-php-ext-install intl iconv mbstring
-RUN docker-php-ext-install zip pcntl
-RUN docker-php-ext-install exif opcache
-RUN docker-php-source delete
+RUN docker-php-ext-install exif \
+    && docker-php-ext-configure intl --enable-intl \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) gd \
+    && docker-php-ext-install pdo \
+    && docker-php-ext-install mysqli pdo_mysql \
+    && docker-php-ext-install intl \
+    && docker-php-ext-install iconv \
+    && docker-php-ext-install mbstring \
+    && docker-php-ext-install zip \
+    && docker-php-ext-install pcntl
 
 #Установка composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 #Установка redis
 RUN pecl install -o -f redis \
-&&  rm -rf /tmp/pear \
-&&  docker-php-ext-enable redis
+    &&  rm -rf /tmp/pear \
+    &&  docker-php-ext-enable redis
 
 #Install xdebug
 RUN pecl install xdebug && docker-php-ext-enable xdebug
-
-#Install supervisor
-#RUN apt-get install -y supervisor
 
 ARG docker_user
 ENV user=${docker_user}
@@ -52,6 +53,10 @@ RUN useradd -o -u 1000 -g www-data -m -s /bin/bash ${user}
 
 RUN chown -R www-data:www-data /var/www/
 RUN chmod 777 -R /tmp && chmod o+t -R /tmp
+
+RUN mv /usr/local/etc/php/php.ini-development /usr/local/etc/php/php.ini
+
+COPY ./conf.d /usr/local/etc/php/conf.d
 
 WORKDIR /var/www/t-bot.local
 

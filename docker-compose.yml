@@ -29,7 +29,6 @@ services:
     container_name: php-t-bot
     volumes:
       - ${LOCAL_PATH_HOST}:${APP_PATH}:cached
-      - ./docker/PHP8/php.ini:/usr/local/etc/php/conf.d/php-custom.ini
     networks:
       - t-bot
 
