@@ -1,0 +1,43 @@
+version: '3.8'
+
+networks:
+  t-bot:
+
+services:
+  nginx-t-bot:
+    image: nginx:latest
+    container_name: nginx-t-bot
+    ports:
+      - ${LOCAL_WEB_PORT}:${APP_WEB_PORT}
+    volumes:
+      - ./docker/Nginx/core:/etc/nginx/
+      - ${LOCAL_PATH_HOST}:${APP_PATH}
+      - ./docker/Nginx/Logs:/var/log/nginx/
+      - ./docker/Nginx/html:/usr/share/nginx/html/
+    links:
+      - php-t-bot
+    depends_on:
+      - php-t-bot
+    networks:
+      - t-bot
+
+  php-t-bot:
+    build:
+      context: ./docker/PHP8
+      args:
+        docker_user: ${DOCKER_USER}
+    container_name: php-t-bot
+    volumes:
+      - ${LOCAL_PATH_HOST}:${APP_PATH}:cached
+      - ./docker/PHP8/php.ini:/usr/local/etc/php/conf.d/php-custom.ini
+    networks:
+      - t-bot
+
+  redis-t-bot:
+    image: redis:4.0.5-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    container_name: redis-t-bot
+    ports:
+      - ${LOCAL_REDIS_PORT}:${APP_REDIS_PORT}
+    networks:
+      - t-bot
