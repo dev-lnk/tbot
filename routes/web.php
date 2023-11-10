@@ -4,7 +4,7 @@ use App\Http\Controllers\TelegramWebhookController;
 use Illuminate\Support\Facades\Route;
 
 $settings = [
-    'middleware' => ['telegram_webhook'],
+    //'middleware' => ['telegram_webhook'],
     'excluded_middleware' => ['web'],
 ];
 Route::group($settings, function () {
