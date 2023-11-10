@@ -10,3 +10,7 @@ $settings = [
 Route::group($settings, function () {
     Route::post('/webhook/telegram', [TelegramWebhookController::class, 'webhook'])->name('webhook.telegram');
 });
+
+Route::get('/test', function () {
+    return 'It is test';
+});
