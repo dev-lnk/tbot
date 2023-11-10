@@ -21,9 +21,10 @@ class TelegramMiddleware
             '91.108.56.0',
             '91.108.4.0',
             '95.161.64.0',
+            '91.108.6.67',
         ];
 
-        $serverIp = $request->server('REMOTE_ADDR');
+        $serverIp = $request->ip();
 
         if(!in_array($serverIp, $telegramIp)) {
             throw new Exception('wrong ip: '. $serverIp);
