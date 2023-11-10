@@ -12,5 +12,5 @@ Route::group($settings, function () {
 });
 
 Route::get('/test', function () {
-    return 'It is a test';
+    return 'It is a test: '.config('app.url');
 });
