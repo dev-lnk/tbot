@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use Exception;
 use Illuminate\Http\Request;
 
 class TelegramMiddleware
@@ -25,7 +26,7 @@ class TelegramMiddleware
         $serverIp = $request->server('REMOTE_ADDR');
 
         if(!in_array($serverIp, $telegramIp)) {
-            return abort(404);
+            throw new Exception('wrong ip: '. $serverIp);
         }
 
         return $next($request);
