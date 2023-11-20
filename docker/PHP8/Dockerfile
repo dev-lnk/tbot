@@ -1,68 +1,82 @@
-FROM php:8.1-fpm
+FROM php:8.1-fpm-alpine
 
-RUN apt-get update \
-    && apt-get install -y \
-    libfreetype6-dev \
-    libjpeg62-turbo-dev \
-    libicu-dev \
-    libmcrypt4 \
-    libmcrypt-dev \
-    libpng-dev \
-    zlib1g-dev \
-    libxml2-dev \
-    libzip-dev \
-    libonig-dev \
-    libcurl4-openssl-dev \
-    libldap2-dev \
-    libpq-dev \
-    htop \
-    wget \
-    curl \
-    bash \
-    vim \
-    zip \
-    unzip
-    #supervisor \
+RUN apk add --no-cache --update \
+  bzip2-dev \
+  enchant2-dev \
+  libpng-dev \
+  gmp-dev \
+  imap-dev \
+  icu-dev \
+  openldap-dev \
+  freetds-dev \
+  libxml2-dev \
+  tidyhtml-dev  \
+  libxslt-dev \
+  libzip-dev \
+  musl-dev \
+  supervisor \
+  openrc
 
-RUN docker-php-ext-install exif \
-    && docker-php-ext-configure intl --enable-intl \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) gd \
-    && docker-php-ext-install pdo \
-    && docker-php-ext-install mysqli pdo_mysql \
-    && docker-php-ext-install intl \
-    && docker-php-ext-install iconv \
-    && docker-php-ext-install mbstring \
-    && docker-php-ext-install zip \
-    && docker-php-ext-install pcntl
+RUN docker-php-ext-install \
+  bcmath \
+  bz2 \
+  calendar \
+  exif \
+  gd \
+  gettext \
+  gmp \
+  imap \
+  intl \
+  ldap \
+  mysqli \
+  opcache \
+  pcntl \
+  pdo_mysql \
+  xsl \
+  zip
 
-#Установка composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+#Installing composer
+RUN curl -sS https://getcomposer.org/installer -o composer-setup.php
+RUN php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+RUN rm -rf composer-setup.php
 
-#Установка redis
-RUN pecl install -o -f redis \
-    &&  rm -rf /tmp/pear \
-    &&  docker-php-ext-enable redis
+#Installing redis
+RUN apk add --no-cache pcre-dev $PHPIZE_DEPS \
+        && pecl install redis \
+        && docker-php-ext-enable redis.so
 
-#Install xdebug
-RUN pecl install xdebug && docker-php-ext-enable xdebug
+#Installing xdebug
+RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS
+RUN apk add --update linux-headers
+RUN pecl install xdebug-3.1.5
+RUN docker-php-ext-enable xdebug
+RUN apk del -f .build-deps
+
+RUN rm -rf /tmp/* /var/cache/apk/*
+
+WORKDIR /var/www/t-bot.local
 
 ARG docker_user
 ENV user=${docker_user}
-RUN useradd -o -u 1000 -g www-data -m -s /bin/bash ${user}
-
+RUN adduser -D -u 1000 ${user}
+RUN addgroup ${user} www-data
 RUN chown -R www-data:www-data /var/www/
+
+RUN mkdir -p /etc/supervisor/conf.d \
+ && mkdir -p /var/log/supervisor
+
 RUN chmod 777 -R /tmp && chmod o+t -R /tmp
+RUN chmod 777 -R /var/log && chmod o+t -R /var/log
+RUN chmod 777 -R /var/run && chmod o+t -R /var/run
 
 RUN mv /usr/local/etc/php/php.ini-development /usr/local/etc/php/php.ini
 
 COPY ./conf.d /usr/local/etc/php/conf.d
 
-WORKDIR /var/www/t-bot.local
+COPY supervisor/supervisord.conf /etc/supervisor/supervisord.conf
 
 COPY entrypoint.sh /home/entrypoint.sh
-RUN tr -d '\015' </home/entrypoint.sh >/home/entrypoints.sh
-RUN chmod +x /home/entrypoints.sh
-entrypoint "/home/entrypoints.sh"
+RUN chmod 755 /home/entrypoint.sh
+CMD ["/home/entrypoint.sh"]
 
 USER ${user}

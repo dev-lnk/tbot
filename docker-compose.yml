@@ -5,7 +5,7 @@ networks:
 
 services:
   nginx-t-bot:
-    image: nginx:latest
+    image: nginx:1.25.1-alpine
     container_name: nginx-t-bot
     ports:
       - ${LOCAL_WEB_PORT}:${APP_WEB_PORT}
@@ -14,8 +14,6 @@ services:
       - ${LOCAL_PATH_HOST}:${APP_PATH}
       - ./docker/Nginx/Logs:/var/log/nginx/
       - ./docker/Nginx/html:/usr/share/nginx/html/
-    links:
-      - php-t-bot
     depends_on:
       - php-t-bot
     networks:
@@ -33,7 +31,7 @@ services:
       - t-bot
 
   redis-t-bot:
-    image: redis:4.0.5-alpine
+    image: redis:7.2-rc-alpine
     command: ["redis-server", "--appendonly", "yes"]
     container_name: redis-t-bot
     ports:

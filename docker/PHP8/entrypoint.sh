@@ -1,12 +1,7 @@
-#!/bin/bash
+#!/bin/ash
 
 set -e;
 
-#ADD YOUR CODE
-
-#If supervisor install
-#/usr/bin/supervisord;
+/usr/bin/supervisord -c /etc/supervisor/supervisord.conf;
 
 php-fpm;
-
-tail -f /home/entrypoints.sh;
