@@ -12,5 +12,5 @@ Route::group($settings, function () {
 });
 
 Route::get('/test', function () {
-    return 'Its a test!';
+    return 'Its a test!!!';
 });
